@@ -72,6 +72,33 @@ function Ensure-GitIdentity {
   }
 }
 
+function Ensure-TargetBranch {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$BranchName
+  )
+
+  $currentBranch = ""
+  try {
+    $currentBranch = (git rev-parse --abbrev-ref HEAD 2>$null | Out-String).Trim()
+  } catch {
+    $currentBranch = ""
+  }
+
+  if ($currentBranch -eq $BranchName) {
+    return
+  }
+
+  git show-ref --verify --quiet "refs/heads/$BranchName"
+  $exists = ($LASTEXITCODE -eq 0)
+
+  if ($exists) {
+    Invoke-Step "git checkout $BranchName"
+  } else {
+    Invoke-Step "git checkout -b $BranchName"
+  }
+}
+
 function Push-Branch {
   param(
     [Parameter(Mandatory = $true)]
@@ -176,6 +203,7 @@ try {
 
   Ensure-GitRepo
   Ensure-GitIdentity
+  Ensure-TargetBranch -BranchName $Branch
 
   $remoteUrl = "https://github.com/$Owner/$Repo.git"
 
