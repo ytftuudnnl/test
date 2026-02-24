@@ -59,11 +59,60 @@
     return Date.now() + 5000 >= ts;
   }
 
-  function makeClientError(code, message) {
+  function buildError(fields) {
+    var message = fields && fields.message ? String(fields.message) : "Request failed";
     var err = new Error(message);
-    err.code = code;
-    err.status = 0;
+    err.name = "CbspClientError";
+    err.status = fields && Number.isFinite(fields.status) ? fields.status : 0;
+    err.code = fields && fields.code ? String(fields.code) : "UNKNOWN_ERROR";
+    err.traceId = fields && fields.traceId ? String(fields.traceId) : null;
+    if (fields && fields.details !== undefined) err.details = fields.details;
+    if (fields && fields.payload !== undefined) err.payload = fields.payload;
+    if (fields && fields.kind) err.kind = String(fields.kind);
     return err;
+  }
+
+  function makeClientError(code, message, details) {
+    return buildError({
+      status: 0,
+      code: code || "CLIENT_ERROR",
+      message: message || "Client error",
+      traceId: null,
+      details: details,
+      kind: "client",
+    });
+  }
+
+  function normalizeError(error) {
+    if (error && typeof error === "object") {
+      var statusNum = Number(error.status);
+      return {
+        status: Number.isFinite(statusNum) ? statusNum : 0,
+        code: typeof error.code === "string" && error.code ? error.code : "UNKNOWN_ERROR",
+        message: typeof error.message === "string" && error.message ? error.message : "Request failed",
+        traceId: typeof error.traceId === "string" && error.traceId ? error.traceId : null,
+        details: Object.prototype.hasOwnProperty.call(error, "details") ? error.details : undefined,
+      };
+    }
+    return {
+      status: 0,
+      code: "UNKNOWN_ERROR",
+      message: typeof error === "string" && error ? error : "Request failed",
+      traceId: null,
+      details: undefined,
+    };
+  }
+
+  function formatError(error) {
+    var normalized = normalizeError(error);
+    var parts = [normalized.message];
+    if (normalized.code && normalized.code !== "UNKNOWN_ERROR") {
+      parts.push("[" + normalized.code + "]");
+    }
+    if (normalized.traceId) {
+      parts.push("(traceId=" + normalized.traceId + ")");
+    }
+    return parts.join(" ");
   }
 
   async function refreshSession() {
@@ -177,12 +226,15 @@
     }
 
     if (!response.ok) {
-      var error = new Error((payload && payload.message) || ("HTTP " + response.status));
-      error.status = response.status;
-      error.code = payload && payload.code;
-      error.traceId = payload && payload.traceId;
-      error.payload = payload;
-      throw error;
+      throw buildError({
+        status: response.status,
+        code: (payload && payload.code) || ("HTTP_" + response.status),
+        message: (payload && payload.message) || ("HTTP " + response.status),
+        traceId: (payload && payload.traceId) || null,
+        details: payload && payload.details,
+        payload: payload,
+        kind: "api",
+      });
     }
 
     return payload;
@@ -227,5 +279,7 @@
     logout: logout,
     refreshSession: refreshSession,
     fetchJson: requestJson,
+    normalizeError: normalizeError,
+    formatError: formatError,
   };
 })();
