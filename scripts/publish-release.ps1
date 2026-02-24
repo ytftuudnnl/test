@@ -87,7 +87,55 @@ function Push-Branch {
     return
   }
 
+  function Sync-RemoteBeforePush {
+    param(
+      [Parameter(Mandatory = $true)]
+      [string]$BranchName
+    )
+
+    Write-Host "[RUN] git fetch origin $BranchName"
+    git fetch origin $BranchName
+    if ($LASTEXITCODE -ne 0) {
+      throw "Command failed ($LASTEXITCODE): git fetch origin $BranchName"
+    }
+
+    git show-ref --verify --quiet "refs/remotes/origin/$BranchName"
+    if ($LASTEXITCODE -ne 0) {
+      return
+    }
+
+    $countsRaw = (git rev-list --left-right --count "HEAD...origin/$BranchName" | Out-String).Trim()
+    $parts = $countsRaw -split "\s+"
+    if ($parts.Length -lt 2) {
+      return
+    }
+
+    $behind = [int]$parts[1]
+    if ($behind -le 0) {
+      return
+    }
+
+    git merge-base HEAD "origin/$BranchName" > $null 2>&1
+    $hasCommonBase = ($LASTEXITCODE -eq 0)
+
+    if ($hasCommonBase) {
+      Write-Host "[RUN] git rebase origin/$BranchName"
+      git rebase "origin/$BranchName"
+      if ($LASTEXITCODE -ne 0) {
+        throw "Rebase failed. Resolve conflicts and run: git rebase --continue"
+      }
+      return
+    }
+
+    Write-Host "[RUN] git rebase --root --onto origin/$BranchName"
+    git rebase --root --onto "origin/$BranchName"
+    if ($LASTEXITCODE -ne 0) {
+      throw "Root rebase failed. Resolve conflicts and run: git rebase --continue"
+    }
+  }
+
   if ([string]::IsNullOrWhiteSpace($env:GITHUB_TOKEN)) {
+    Sync-RemoteBeforePush -BranchName $Branch
     Invoke-Step "git push -u origin $Branch"
     return
   }
@@ -108,6 +156,7 @@ function Push-Branch {
   }
 
   try {
+    Sync-RemoteBeforePush -BranchName $Branch
     git push -u origin $Branch
     if ($LASTEXITCODE -ne 0) {
       throw "Command failed ($LASTEXITCODE): git push -u origin $Branch"
