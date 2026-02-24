@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "date": "2026-02-24T16:34:05.332Z",
+  "gate": "ci-lint-unit",
+  "steps": [
+    {
+      "label": "lint",
+      "command": "runLint()",
+      "ok": true,
+      "status": 0,
+      "startedAt": "2026-02-24T16:34:05.142Z",
+      "finishedAt": "2026-02-24T16:34:05.149Z",
+      "durationMs": 7,
+      "details": {
+        "ok": true,
+        "filesScanned": 34,
+        "findings": []
+      },
+      "error": ""
+    },
+    {
+      "label": "unit",
+      "command": "runUnitTests({ silent: true })",
+      "ok": true,
+      "status": 0,
+      "startedAt": "2026-02-24T16:34:05.149Z",
+      "finishedAt": "2026-02-24T16:34:05.332Z",
+      "durationMs": 183,
+      "details": {
+        "ok": true,
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "durationMs": 182,
+        "failures": []
+      },
+      "error": ""
+    }
+  ]
+}

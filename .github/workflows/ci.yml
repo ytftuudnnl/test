@@ -1,0 +1,61 @@
+name: api-ci
+
+on:
+  pull_request:
+    paths:
+      - "services/api/**"
+      - "scripts/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/ci.yml"
+  push:
+    branches: [ main ]
+    paths:
+      - "services/api/**"
+      - "scripts/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/ci.yml"
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:8
+        ports:
+          - 27017:27017
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Secret scan
+        run: npm run scan:secrets
+
+      - name: Wait for MongoDB
+        run: |
+          node -e "const { MongoClient } = require('mongodb'); (async () => { for (let i = 0; i < 40; i += 1) { try { const c = new MongoClient('mongodb://127.0.0.1:27017'); await c.connect(); await c.db('admin').command({ ping: 1 }); await c.close(); console.log('mongo ready'); process.exit(0); } catch (e) { await new Promise(r => setTimeout(r, 500)); } } throw new Error('mongo not ready'); })().catch((e) => { console.error(e); process.exit(1); });"
+
+      - name: Typecheck API
+        run: npm run typecheck:api
+
+      - name: Build API
+        run: npm run build:api
+
+      - name: API integration test (memory)
+        run: node scripts/api-integration-test.js --driver=memory
+
+      - name: API integration test (mongo)
+        env:
+          DATA_DRIVER: mongo
+          MONGODB_URI: mongodb://127.0.0.1:27017
+        run: node scripts/api-integration-test.js --driver=mongo --require-mongo

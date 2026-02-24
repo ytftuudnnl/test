@@ -1,0 +1,155 @@
+{
+  "ok": true,
+  "date": "2026-02-24T16:15:09.540Z",
+  "uri": "mongodb://127.0.0.1:27019",
+  "dbName": "cbsp_migration_drill_1771949707",
+  "migration": "001_init_indexes",
+  "upSummary": {
+    "users": [
+      "users_id_unique",
+      "users_username_unique",
+      "users_email_unique"
+    ],
+    "customers": [
+      "customers_id_unique",
+      "customers_email_idx",
+      "customers_tags_idx",
+      "customers_segments_idx"
+    ],
+    "messages": [
+      "messages_id_unique",
+      "messages_customer_created_idx",
+      "messages_status_assigned_idx",
+      "messages_channel_created_idx"
+    ],
+    "conversations": [
+      "conv_customer_status_idx",
+      "conv_last_message_idx"
+    ],
+    "ecommerceConnections": [
+      "ecom_platform_user_idx",
+      "ecom_status_idx"
+    ]
+  },
+  "downSummary": {
+    "users": [
+      {
+        "index": "users_id_unique",
+        "dropped": true
+      },
+      {
+        "index": "users_username_unique",
+        "dropped": true
+      },
+      {
+        "index": "users_email_unique",
+        "dropped": true
+      }
+    ],
+    "customers": [
+      {
+        "index": "customers_id_unique",
+        "dropped": true
+      },
+      {
+        "index": "customers_email_idx",
+        "dropped": true
+      },
+      {
+        "index": "customers_tags_idx",
+        "dropped": true
+      },
+      {
+        "index": "customers_segments_idx",
+        "dropped": true
+      }
+    ],
+    "messages": [
+      {
+        "index": "messages_id_unique",
+        "dropped": true
+      },
+      {
+        "index": "messages_customer_created_idx",
+        "dropped": true
+      },
+      {
+        "index": "messages_status_assigned_idx",
+        "dropped": true
+      },
+      {
+        "index": "messages_channel_created_idx",
+        "dropped": true
+      }
+    ],
+    "conversations": [
+      {
+        "index": "conv_customer_status_idx",
+        "dropped": true
+      },
+      {
+        "index": "conv_last_message_idx",
+        "dropped": true
+      }
+    ],
+    "ecommerceConnections": [
+      {
+        "index": "ecom_platform_user_idx",
+        "dropped": true
+      },
+      {
+        "index": "ecom_status_idx",
+        "dropped": true
+      }
+    ]
+  },
+  "snapshotAfterUp": {
+    "users": [
+      "_id_",
+      "users_email_unique",
+      "users_id_unique",
+      "users_username_unique"
+    ],
+    "customers": [
+      "_id_",
+      "customers_email_idx",
+      "customers_id_unique",
+      "customers_segments_idx",
+      "customers_tags_idx"
+    ],
+    "messages": [
+      "_id_",
+      "messages_channel_created_idx",
+      "messages_customer_created_idx",
+      "messages_id_unique",
+      "messages_status_assigned_idx"
+    ],
+    "conversations": [
+      "_id_",
+      "conv_customer_status_idx",
+      "conv_last_message_idx"
+    ],
+    "ecommerceConnections": [
+      "_id_",
+      "ecom_platform_user_idx",
+      "ecom_status_idx"
+    ]
+  },
+  "snapshotAfterDown": {
+    "users": [
+      "_id_"
+    ],
+    "customers": [
+      "_id_"
+    ],
+    "messages": [
+      "_id_"
+    ],
+    "conversations": [
+      "_id_"
+    ],
+    "ecommerceConnections": [
+      "_id_"
+    ]
+  }
+}

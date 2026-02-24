@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "date": "2026-02-24T16:07:32.850Z",
+  "driver": "memory",
+  "base": "http://127.0.0.1:56556",
+  "checks": {
+    "health": {
+      "pass": true,
+      "dataDriver": "memory",
+      "timestamp": "2026-02-24T16:07:32.877Z"
+    },
+    "agentForbidden": {
+      "pass": true,
+      "code": "AUTH_FORBIDDEN",
+      "traceId": "f21299b4-4497-4fdd-afef-7a86df96dfe4",
+      "endpoint": "/api/integrations"
+    },
+    "coreFlow": {
+      "pass": true,
+      "path": "inbound -> process/translate -> outbound (customer scoped)",
+      "customerMessages": 2
+    },
+    "adminFlow": {
+      "pass": true,
+      "integrationsCount": 2,
+      "destructiveRehearsal": "create channel -> delete channel"
+    }
+  },
+  "traceIds": [
+    "f21299b4-4497-4fdd-afef-7a86df96dfe4"
+  ],
+  "ids": {
+    "customerId": "c-1771949252979-f9a88c7a",
+    "conversationId": "conv-1771949252982-eaf9de4b",
+    "inboundMessageId": "m-1771949252984-642278c1",
+    "outboundMessageId": "m-1771949252990-21f3a821",
+    "rehearsalChannelId": "ch-1771949253068-f65906bc"
+  }
+}

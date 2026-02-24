@@ -1,0 +1,31 @@
+{
+  "name": "cross-border-support-platform-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Wave0 engineering scaffold for cross-border support platform",
+  "workspaces": [
+    "services/api"
+  ],
+  "scripts": {
+    "dev:api": "npm --workspace @cbsp/api run dev",
+    "build:api": "npm --workspace @cbsp/api run build",
+    "typecheck:api": "npm --workspace @cbsp/api run typecheck",
+    "lint:api": "npm run typecheck:api && node scripts/lint-source.js",
+    "test:unit": "npm run build:api && node scripts/unit-tests.js",
+    "gate:ci:checks": "npm run lint:api && npm run test:unit",
+    "qa:ci:gate:evidence": "node scripts/qa-ci-gate-evidence.js",
+    "scan:secrets": "node scripts/scan-secrets.js",
+    "test:api:integration": "npm run build:api && node scripts/api-integration-test.js --driver=memory",
+    "test:api:integration:mongo": "npm run build:api && node scripts/api-integration-test.js --driver=mongo --require-mongo --mongo-autostart=off",
+    "qa:e2e:evidence": "npm run build:api && node scripts/qa-e2e-evidence.js --driver=memory",
+    "qa:e2e:evidence:mongo": "npm run build:api && node scripts/qa-e2e-evidence.js --driver=mongo --require-mongo --mongo-autostart=off",
+    "qa:migration:drill": "npm run build:api && node scripts/migration-rollback-drill.js",
+    "perf:baseline:memory": "npm run build:api && node scripts/perf-baseline.js --driver=memory --warmup=6 --iterations=30",
+    "perf:baseline:mongo": "npm run build:api && node scripts/perf-baseline.js --driver=mongo --require-mongo --mongo-autostart=off --warmup=6 --iterations=30",
+    "ops:rollback:rehearsal": "powershell -ExecutionPolicy Bypass -File scripts/run-app-rollback-rehearsal.ps1",
+    "release:check": "npm run scan:secrets && npm run test:api:integration",
+    "release:check:full": "npm run release:check && npm run test:api:integration:mongo",
+    "db:migrate:indexes": "npm --workspace @cbsp/api run migrate:indexes",
+    "db:migrate:indexes:down": "npm --workspace @cbsp/api run migrate:indexes:down"
+  }
+}

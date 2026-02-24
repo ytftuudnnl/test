@@ -1,0 +1,12 @@
+﻿{
+    "checkpointPath":  "C:\\Users\\xds\\app-team-output\\cross-border-support-platform\\workspace\\backups\\\\checkpoints\\20260224-164010",
+    "ok":  true,
+    "fileCount":  26,
+    "digest":  "05e487a30669e90531deb752dc80c459a23e689bea9ee92216a9740ce75bd224",
+    "date":  "2026-02-24T16:40:14.7210324Z",
+    "artifact":  "services/api/dist",
+    "validation":  {
+                       "matchesStableSnapshot":  true,
+                       "validatedDuringRehearsal":  true
+                   }
+}
