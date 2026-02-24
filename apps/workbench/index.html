@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workbench Preview</title>
+  <style>
+    :root {
+      --bg-a: #f7fbff;
+      --bg-b: #eef7f6;
+      --text: #162033;
+      --muted: #4c5d77;
+      --card: #ffffff;
+      --line: #d6e3ef;
+      --ok: #0f766e;
+      --warn: #b45309;
+      --accent: #1d4ed8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 10% 10%, var(--bg-a), var(--bg-b));
+    }
+    .wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 22px 18px 32px;
+    }
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: linear-gradient(120deg, #ffffff, #f2f8ff 45%, #eefaf4);
+      box-shadow: 0 10px 24px rgba(20, 33, 56, 0.08);
+    }
+    .hero h1 { margin: 0; font-size: 28px; }
+    .hero p { margin: 8px 0 0; color: var(--muted); }
+    .grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .panel h2 { margin: 0 0 8px; font-size: 16px; }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #fff;
+      background: linear-gradient(90deg, var(--ok), var(--accent));
+      margin-bottom: 8px;
+    }
+    .meta { font-size: 13px; color: var(--muted); }
+    ul { margin: 8px 0 0; padding-left: 18px; }
+    li { margin: 4px 0; }
+    .status {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      border: 1px solid #cde2ff;
+      background: #eef6ff;
+      color: #19438f;
+    }
+    .status.warn {
+      border-color: #f8ddb7;
+      background: #fff7eb;
+      color: #8a4b00;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>客服工作台预览</h1>
+      <p>Wave0 可执行骨架。当前为合同对齐阶段 UI，不是最终生产界面。</p>
+      <div id="api-status" class="status">正在检查 API 状态...</div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <span class="pill">Inbox</span>
+        <h2>统一消息收件箱</h2>
+        <div class="meta">目标：对齐 F001-F004</div>
+        <ul>
+          <li>按渠道聚合会话</li>
+          <li>消息优先级标记</li>
+          <li>分配给客服或机器人</li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <span class="pill">Translate</span>
+        <h2>翻译视图</h2>
+        <div class="meta">目标：对齐 F005-F008</div>
+        <ul>
+          <li>原文/译文并排显示</li>
+          <li>语种检测标签</li>
+          <li>缓存命中提示</li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <span class="pill">Bot Assist</span>
+        <h2>机器人协作回复</h2>
+        <div class="meta">目标：对齐 F009-F013</div>
+        <ul>
+          <li>意图识别建议</li>
+          <li>自动回复草稿</li>
+          <li>复杂问题转人工</li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <span class="pill">Customer</span>
+        <h2>客户侧栏</h2>
+        <div class="meta">目标：对齐 F014-F018（MVP 基础版）</div>
+        <ul>
+          <li>客户画像摘要</li>
+          <li>标签/分层视图</li>
+          <li>跟进提醒入口</li>
+        </ul>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    (async function () {
+      const box = document.getElementById("api-status");
+      try {
+        const res = await fetch("http://localhost:3100/health");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const json = await res.json();
+        box.textContent = "API 在线: " + json.data.status + " | 时间: " + json.data.timestamp;
+      } catch (err) {
+        box.textContent = "API 未连接。先启动 services/api: npm run dev:api";
+        box.classList.add("warn");
+      }
+    })();
+  </script>
+</body>
+</html>

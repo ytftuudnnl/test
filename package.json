@@ -1,0 +1,19 @@
+{
+  "name": "cross-border-support-platform-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Wave0 engineering scaffold for cross-border support platform",
+  "workspaces": [
+    "services/api"
+  ],
+  "scripts": {
+    "dev:api": "npm --workspace @cbsp/api run dev",
+    "build:api": "npm --workspace @cbsp/api run build",
+    "typecheck:api": "npm --workspace @cbsp/api run typecheck",
+    "scan:secrets": "node scripts/scan-secrets.js",
+    "test:api:integration": "npm run build:api && node scripts/api-integration-test.js --driver=memory",
+    "test:api:integration:mongo": "npm run build:api && node scripts/api-integration-test.js --driver=mongo --require-mongo",
+    "release:check": "npm run scan:secrets && npm run test:api:integration",
+    "release:check:full": "npm run release:check && npm run test:api:integration:mongo"
+  }
+}

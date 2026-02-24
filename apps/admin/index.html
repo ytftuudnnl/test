@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Preview</title>
+  <style>
+    :root {
+      --bg: #f6f8fc;
+      --text: #121a2d;
+      --muted: #5a6782;
+      --card: #ffffff;
+      --line: #d9e0ec;
+      --primary: #1f3a8a;
+      --accent: #0f766e;
+      --danger: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #eef2fb, var(--bg) 45%);
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 36px; }
+    .hero {
+      background: linear-gradient(120deg, #fff, #eef4ff 40%, #eef9f7);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(18, 26, 45, 0.08);
+    }
+    h1 { margin: 0; font-size: 26px; }
+    .sub { margin: 8px 0 0; color: var(--muted); }
+    .grid {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .card h2 { margin: 0 0 6px; font-size: 16px; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: #fff;
+      font-size: 12px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      margin-bottom: 8px;
+    }
+    .meta { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+    ul { margin: 0; padding-left: 18px; }
+    li { margin: 4px 0; }
+    .gate {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #f1c7c7;
+      background: #fff4f4;
+      color: var(--danger);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>管理后台预览</h1>
+      <p class="sub">这页对应 Wave0 的 Admin 合同：路由、权限、风险动作保护。</p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <span class="badge">Channels</span>
+        <h2>渠道配置</h2>
+        <div class="meta">F001 / F027</div>
+        <ul>
+          <li>渠道新增/编辑</li>
+          <li>连接测试</li>
+          <li>故障状态告警</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="badge">Automation</span>
+        <h2>自动化规则</h2>
+        <div class="meta">F019-F022</div>
+        <ul>
+          <li>触发条件编辑</li>
+          <li>动作链编排</li>
+          <li>启停与审计日志</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="badge">Integrations</span>
+        <h2>电商平台集成</h2>
+        <div class="meta">F027-F030</div>
+        <ul>
+          <li>Shopify/Amazon/eBay 接入</li>
+          <li>同步任务状态</li>
+          <li>凭证加密存储</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="badge">Analytics</span>
+        <h2>运营报表</h2>
+        <div class="meta">F023-F026</div>
+        <ul>
+          <li>实时看板</li>
+          <li>历史趋势</li>
+          <li>导出与权限控制</li>
+        </ul>
+      </article>
+    </section>
+
+    <div class="gate">
+      Gate 状态：NO-GO（当前仅骨架）。通过条件：RBAC 对齐、合同签收、核心链路 smoke 测试通过。
+    </div>
+  </div>
+</body>
+</html>
