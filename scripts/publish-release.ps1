@@ -99,7 +99,7 @@ function Push-Branch {
     $originalUrl = "https://github.com/$Owner/$Repo.git"
   }
 
-  $tokenUrl = "https://{0}:{1}@github.com/{0}/{2}.git" -f $Owner, $env:GITHUB_TOKEN, $Repo
+  $tokenUrl = "https://x-access-token:{0}@github.com/{1}/{2}.git" -f $env:GITHUB_TOKEN, $Owner, $Repo
 
   Write-Host "[RUN] git push -u origin $Branch (using GITHUB_TOKEN)"
   git remote set-url origin $tokenUrl > $null 2>&1
