@@ -72,6 +72,51 @@ function Ensure-GitIdentity {
   }
 }
 
+function Push-Branch {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Owner,
+    [Parameter(Mandatory = $true)]
+    [string]$Repo,
+    [Parameter(Mandatory = $true)]
+    [string]$Branch
+  )
+
+  if ($DryRun) {
+    Write-Host "[DRY RUN] git push -u origin $Branch"
+    return
+  }
+
+  if ([string]::IsNullOrWhiteSpace($env:GITHUB_TOKEN)) {
+    Invoke-Step "git push -u origin $Branch"
+    return
+  }
+
+  $originalUrl = ""
+  try {
+    $originalUrl = (git remote get-url origin | Out-String).Trim()
+  } catch {
+    $originalUrl = "https://github.com/$Owner/$Repo.git"
+  }
+
+  $tokenUrl = "https://{0}:{1}@github.com/{0}/{2}.git" -f $Owner, $env:GITHUB_TOKEN, $Repo
+
+  Write-Host "[RUN] git push -u origin $Branch (using GITHUB_TOKEN)"
+  git remote set-url origin $tokenUrl > $null 2>&1
+  if ($LASTEXITCODE -ne 0) {
+    throw "Failed to set authenticated remote URL."
+  }
+
+  try {
+    git push -u origin $Branch
+    if ($LASTEXITCODE -ne 0) {
+      throw "Command failed ($LASTEXITCODE): git push -u origin $Branch"
+    }
+  } finally {
+    git remote set-url origin $originalUrl > $null 2>&1
+  }
+}
+
 Write-Host "Preparing publish for $Owner/$Repo (branch=$Branch)"
 
 Push-Location $workspaceRoot
@@ -119,7 +164,7 @@ try {
     Write-Host "No staged changes to commit."
   }
 
-  Invoke-Step "git push -u origin $Branch"
+  Push-Branch -Owner $Owner -Repo $Repo -Branch $Branch
 
   Write-Host "Publish completed."
 } finally {
