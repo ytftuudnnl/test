@@ -1,0 +1,31 @@
+﻿{
+    "baseUrl":  "http://127.0.0.1:3120",
+    "candidateDigest":  "aacf079b0d05bf1954d030f18cb1db01380e555af92d0d2a107b3c74f642e524",
+    "ok":  true,
+    "stableDigest":  "05e487a30669e90531deb752dc80c459a23e689bea9ee92216a9740ce75bd224",
+    "rollbackDigest":  "05e487a30669e90531deb752dc80c459a23e689bea9ee92216a9740ce75bd224",
+    "backupCheckpoint":  {
+                             "path":  "C:\\Users\\xds\\app-team-output\\cross-border-support-platform\\workspace\\backups\\\\checkpoints\\20260224-164010",
+                             "matchesStable":  true,
+                             "digest":  "05e487a30669e90531deb752dc80c459a23e689bea9ee92216a9740ce75bd224",
+                             "fileCount":  26
+                         },
+    "date":  "2026-02-24T16:40:14.7195031Z",
+    "checks":  {
+                   "rollbackSmoke":  {
+                                         "user":  {
+                                                      "role":  "admin",
+                                                      "username":  "admin.demo"
+                                                  },
+                                         "healthTimestamp":  "2026-02-24T16:40:14.615Z"
+                                     },
+                   "candidateSmoke":  {
+                                          "user":  {
+                                                       "role":  "admin",
+                                                       "username":  "admin.demo"
+                                                   },
+                                          "healthTimestamp":  "2026-02-24T16:40:13.864Z"
+                                      },
+                   "rollbackMatchesStable":  true
+               }
+}

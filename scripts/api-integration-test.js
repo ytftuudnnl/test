@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 const assert = require("node:assert/strict");
+const path = require("node:path");
+const { ensureMongoAvailability } = require("./lib/mongo-local-runner");
 
 function parseArgs(argv) {
   const parsed = {
     driver: "memory",
     requireMongo: false,
     port: 0,
+    mongoAutostart: true,
   };
 
   for (const arg of argv) {
@@ -32,6 +35,18 @@ function parseArgs(argv) {
       parsed.port = value;
       continue;
     }
+
+    if (arg.startsWith("--mongo-autostart=")) {
+      const value = arg.slice("--mongo-autostart=".length).trim().toLowerCase();
+      if (value === "on" || value === "true" || value === "1") {
+        parsed.mongoAutostart = true;
+      } else if (value === "off" || value === "false" || value === "0") {
+        parsed.mongoAutostart = false;
+      } else {
+        throw new Error(`Invalid --mongo-autostart value: ${value}`);
+      }
+      continue;
+    }
   }
 
   return parsed;
@@ -39,13 +54,24 @@ function parseArgs(argv) {
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const mongoUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017";
+  const baseMongoUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017";
   const mongoDb = process.env.MONGODB_DB || `cbsp_integration_${Date.now()}`;
+  const workdir = path.resolve(__dirname, "..");
+  let mongoRuntime = null;
+
+  if (options.driver === "mongo") {
+    mongoRuntime = await ensureMongoAvailability({
+      mongoUri: baseMongoUri,
+      requireMongo: options.requireMongo,
+      workdir,
+      autoStart: options.mongoAutostart,
+    });
+  }
 
   process.env.DATA_DRIVER = options.driver;
   process.env.PORT = String(options.port);
   if (options.driver === "mongo") {
-    process.env.MONGODB_URI = mongoUri;
+    process.env.MONGODB_URI = mongoRuntime ? mongoRuntime.uri : baseMongoUri;
     process.env.MONGODB_DB = mongoDb;
   } else {
     delete process.env.MONGODB_URI;
@@ -67,9 +93,13 @@ async function main() {
   }
   const base = `http://127.0.0.1:${address.port}`;
   const idSuffix = Date.now();
+  let authToken = "";
 
   async function api(method, path, body, expectedStatus = 200) {
     const headers = {};
+    if (authToken && path.startsWith("/api/") && !path.startsWith("/api/auth/")) {
+      headers.authorization = `Bearer ${authToken}`;
+    }
     let payload = undefined;
     if (body !== undefined) {
       headers["content-type"] = "application/json";
@@ -109,8 +139,34 @@ async function main() {
       assert.equal(health.data.dataDriver, "mongo", "mongo test requires mongo driver");
     }
 
-    const login = await api("POST", "/api/auth/login", { username: "agent.demo", password: "pass-1234" });
+    const noAuthCustomers = await api("GET", "/api/customers?page=1&pageSize=1", undefined, 401);
+    assert.equal(noAuthCustomers.code, "AUTH_INVALID_CREDENTIALS", "customers should require auth");
+
+    const login = await api("POST", "/api/auth/login", { username: "admin.demo", password: "pass-1234" });
     assert.ok(typeof login.data.token === "string" && login.data.token.length > 0, "login token missing");
+    assert.ok(typeof login.data.refreshToken === "string" && login.data.refreshToken.length > 0, "refresh token missing");
+    assert.equal(login.data.token.split(".").length, 3, "access token must be JWT-like");
+    authToken = login.data.token;
+
+    const refreshedAuth = await api("POST", "/api/auth/refresh", {
+      refreshToken: login.data.refreshToken,
+    });
+    assert.ok(typeof refreshedAuth.data.token === "string" && refreshedAuth.data.token.length > 0, "refreshed token missing");
+    assert.ok(
+      typeof refreshedAuth.data.refreshToken === "string" && refreshedAuth.data.refreshToken.length > 0,
+      "rotated refresh token missing",
+    );
+    assert.notEqual(
+      refreshedAuth.data.refreshToken,
+      login.data.refreshToken,
+      "refresh rotation must issue a new refresh token",
+    );
+
+    const reusedRefresh = await api("POST", "/api/auth/refresh", {
+      refreshToken: login.data.refreshToken,
+    }, 401);
+    assert.equal(reusedRefresh.code, "AUTH_INVALID_CREDENTIALS", "reused refresh token should be rejected");
+    authToken = refreshedAuth.data.token;
 
     const createdCustomer = await api("POST", "/api/customers", {
       name: `Integration User ${idSuffix}`,
@@ -219,10 +275,15 @@ async function main() {
       driver: health.data.dataDriver,
       base,
       mongoDb: options.driver === "mongo" ? mongoDb : undefined,
+      mongoUri: options.driver === "mongo" ? process.env.MONGODB_URI : undefined,
+      mongoRuntime: mongoRuntime ? mongoRuntime.details : undefined,
     }, null, 2));
   } finally {
     await new Promise((resolve) => server.close(() => resolve()));
     await data.closeDataRepository();
+    if (mongoRuntime) {
+      await mongoRuntime.cleanup();
+    }
   }
 }
 

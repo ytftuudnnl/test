@@ -11,6 +11,7 @@ import {
   MessageRecord,
   UserRecord,
 } from "./types";
+import { hashPassword, verifyPassword } from "../utils/password";
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -71,6 +72,7 @@ export async function createMongoRepository(uri: string, dbName: string): Promis
     if (count > 0) return;
 
     const ts = nowIso();
+    const seededPassword = hashPassword("pass-1234");
 
     await users.insertMany([
       {
@@ -78,7 +80,7 @@ export async function createMongoRepository(uri: string, dbName: string): Promis
         username: "admin.demo",
         email: "admin@example.com",
         role: "admin",
-        passwordHash: "pass-1234",
+        passwordHash: seededPassword,
         createdAt: ts,
         updatedAt: ts,
       },
@@ -87,7 +89,7 @@ export async function createMongoRepository(uri: string, dbName: string): Promis
         username: "agent.demo",
         email: "agent@example.com",
         role: "agent",
-        passwordHash: "pass-1234",
+        passwordHash: seededPassword,
         createdAt: ts,
         updatedAt: ts,
       },
@@ -187,8 +189,11 @@ export async function createMongoRepository(uri: string, dbName: string): Promis
 
   return {
     async findUserByCredentials(username, password) {
-      const found = await users.findOne({ username, passwordHash: password });
-      return stripMongoId(found);
+      const found = await users.findOne({ username });
+      const user = stripMongoId(found);
+      if (!user) return null;
+      if (!verifyPassword(password, user.passwordHash)) return null;
+      return user;
     },
 
     async existsUserByUsernameOrEmail(username, email) {

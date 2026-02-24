@@ -9,7 +9,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "migrate:indexes": "node database/migrations/001_init_indexes.js"
+    "migrate:indexes": "node database/migrations/001_init_indexes.js",
+    "migrate:indexes:down": "node database/migrations/001_init_indexes.down.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

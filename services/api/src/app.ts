@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { traceMiddleware } from "./middleware/trace";
 import { errorHandler, notFoundHandler } from "./middleware/error";
+import { requireAuth, requireRoles } from "./middleware/auth";
 import { healthRouter } from "./routes/health";
 import { authRouter } from "./routes/auth";
 import { customersRouter } from "./routes/customers";
@@ -21,13 +22,13 @@ export function createApp() {
 
   app.use(healthRouter);
   app.use("/api/auth", authRouter);
-  app.use("/api/customers", customersRouter);
-  app.use("/api/messages", messagesRouter);
-  app.use("/api/conversations", conversationsRouter);
-  app.use("/api/channels", channelsRouter);
-  app.use("/api/automations", automationsRouter);
-  app.use("/api/analytics", analyticsRouter);
-  app.use("/api/integrations", integrationsRouter);
+  app.use("/api/customers", requireAuth, customersRouter);
+  app.use("/api/messages", requireAuth, messagesRouter);
+  app.use("/api/conversations", requireAuth, conversationsRouter);
+  app.use("/api/channels", requireAuth, requireRoles(["admin"]), channelsRouter);
+  app.use("/api/automations", requireAuth, requireRoles(["admin", "manager"]), automationsRouter);
+  app.use("/api/analytics", requireAuth, analyticsRouter);
+  app.use("/api/integrations", requireAuth, requireRoles(["admin"]), integrationsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

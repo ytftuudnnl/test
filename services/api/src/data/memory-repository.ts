@@ -10,6 +10,7 @@ import {
   UserRecord,
 } from "./types";
 import { randomUUID } from "crypto";
+import { hashPassword, verifyPassword } from "../utils/password";
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -62,13 +63,15 @@ function buildDailySeries(createdAts: string[], days: number): AnalyticsDailyMes
 }
 
 export function createMemoryRepository(): DataRepository {
+  const seededPassword = hashPassword("pass-1234");
+
   const users: UserRecord[] = [
     {
       id: "u-admin-1",
       username: "admin.demo",
       email: "admin@example.com",
       role: "admin",
-      passwordHash: "pass-1234",
+      passwordHash: seededPassword,
       createdAt: nowIso(),
       updatedAt: nowIso(),
     },
@@ -77,7 +80,7 @@ export function createMemoryRepository(): DataRepository {
       username: "agent.demo",
       email: "agent@example.com",
       role: "agent",
-      passwordHash: "pass-1234",
+      passwordHash: seededPassword,
       createdAt: nowIso(),
       updatedAt: nowIso(),
     },
@@ -182,7 +185,9 @@ export function createMemoryRepository(): DataRepository {
 
   return {
     async findUserByCredentials(username, password) {
-      return users.find((v) => v.username === username && v.passwordHash === password) || null;
+      const found = users.find((v) => v.username === username);
+      if (!found) return null;
+      return verifyPassword(password, found.passwordHash) ? found : null;
     },
 
     async existsUserByUsernameOrEmail(username, email) {

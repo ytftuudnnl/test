@@ -1,0 +1,94 @@
+{
+  "ok": true,
+  "date": "2026-02-24T16:32:18.675Z",
+  "driver": "memory",
+  "base": "http://127.0.0.1:58849",
+  "iterations": 30,
+  "warmup": 6,
+  "target": {
+    "apiP95Ms": 1000
+  },
+  "scenarios": [
+    {
+      "name": "health",
+      "expectedStatus": 200,
+      "warmup": 6,
+      "iterations": 30,
+      "failures": 0,
+      "successRate": 100,
+      "summary": {
+        "count": 30,
+        "minMs": 0.61,
+        "avgMs": 0.81,
+        "p50Ms": 0.69,
+        "p95Ms": 1.33,
+        "p99Ms": 2.53,
+        "maxMs": 2.53
+      },
+      "pass": true
+    },
+    {
+      "name": "list-customers",
+      "expectedStatus": 200,
+      "warmup": 6,
+      "iterations": 30,
+      "failures": 0,
+      "successRate": 100,
+      "summary": {
+        "count": 30,
+        "minMs": 0.68,
+        "avgMs": 0.83,
+        "p50Ms": 0.73,
+        "p95Ms": 1.03,
+        "p99Ms": 2.47,
+        "maxMs": 2.47
+      },
+      "pass": true
+    },
+    {
+      "name": "create-message",
+      "expectedStatus": 201,
+      "warmup": 6,
+      "iterations": 30,
+      "failures": 0,
+      "successRate": 100,
+      "summary": {
+        "count": 30,
+        "minMs": 0.83,
+        "avgMs": 0.94,
+        "p50Ms": 0.87,
+        "p95Ms": 1.55,
+        "p99Ms": 1.77,
+        "maxMs": 1.77
+      },
+      "pass": true
+    },
+    {
+      "name": "analytics-summary",
+      "expectedStatus": 200,
+      "warmup": 6,
+      "iterations": 30,
+      "failures": 0,
+      "successRate": 100,
+      "summary": {
+        "count": 30,
+        "minMs": 0.62,
+        "avgMs": 0.76,
+        "p50Ms": 0.68,
+        "p95Ms": 0.93,
+        "p99Ms": 2.31,
+        "maxMs": 2.31
+      },
+      "pass": true
+    }
+  ],
+  "overall": {
+    "count": 12,
+    "minMs": 0.68,
+    "avgMs": 1.41,
+    "p50Ms": 1.03,
+    "p95Ms": 2.53,
+    "p99Ms": 2.53,
+    "maxMs": 2.53
+  }
+}
