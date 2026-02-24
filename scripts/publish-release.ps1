@@ -93,10 +93,10 @@ function Push-Branch {
       [string]$BranchName
     )
 
-    Write-Host "[RUN] git fetch origin $BranchName"
-    git fetch origin $BranchName
+    Write-Host "[RUN] git fetch origin"
+    git fetch origin
     if ($LASTEXITCODE -ne 0) {
-      throw "Command failed ($LASTEXITCODE): git fetch origin $BranchName"
+      throw "Command failed ($LASTEXITCODE): git fetch origin"
     }
 
     git show-ref --verify --quiet "refs/remotes/origin/$BranchName"
