@@ -288,6 +288,7 @@
   </div>
 
   <script src="/apps/shared/auth-client.js"></script>
+  <script src="/apps/shared/api-client.js"></script>
   <script>
     window.__CBSPWorkbenchBooted = false;
     window.__cbspWorkbenchQuickLogin = async function fallbackWorkbenchQuickLogin(username, password, targetHash) {
@@ -301,11 +302,15 @@
         if (targetHash) location.hash = targetHash;
         location.reload();
       } catch (error) {
-        alert("Quick login failed: " + ((error && error.message) || String(error)));
+        var message =
+          window.CBSPAuth && typeof window.CBSPAuth.formatError === "function"
+            ? window.CBSPAuth.formatError(error)
+            : ((error && error.message) || String(error));
+        alert("Quick login failed: " + message);
       }
     };
 
-    function runWorkbench(auth) {
+    function runWorkbench(auth, api) {
       window.__CBSPWorkbenchBooted = true;
       var stateEl = document.getElementById("view-state");
       var contentEl = document.getElementById("view-content");
@@ -370,6 +375,36 @@
         });
       }
 
+      function getFirstAllowedRoute() {
+        if (!auth.isLoggedIn()) return null;
+        var role = auth.getRole();
+        if (!role) return null;
+        for (var i = 0; i < navButtons.length; i += 1) {
+          var route = navButtons[i].getAttribute("data-route");
+          if (checkRoleAccess(route)) return route;
+        }
+        return null;
+      }
+
+      function syncNavAccess() {
+        var role = auth.getRole();
+        var loggedIn = auth.isLoggedIn();
+        navButtons.forEach(function (btn) {
+          var route = btn.getAttribute("data-route");
+          var allowed = loggedIn && checkRoleAccess(route);
+          btn.disabled = !allowed;
+          if (allowed) {
+            btn.title = "";
+            return;
+          }
+          if (!loggedIn) {
+            btn.title = "Login required";
+            return;
+          }
+          btn.title = "Role '" + (role || "guest") + "' cannot access " + route;
+        });
+      }
+
       function updateSessionChips() {
         var session = auth.getSession();
         var role = auth.getRole() || "guest";
@@ -385,14 +420,13 @@
           chipUser.textContent = "Session: signed out";
           chipUser.className = "chip warn";
         }
+        syncNavAccess();
       }
 
       async function checkHealth() {
         try {
-          var response = await fetch(auth.apiBase + "/health");
-          if (!response.ok) throw new Error("HTTP " + response.status);
-          var payload = await response.json();
-          chipApi.textContent = "API: " + payload.data.status + " (" + payload.data.dataDriver + ")";
+          var health = await api.health();
+          chipApi.textContent = "API: " + health.status + " (" + health.dataDriver + ")";
           chipApi.className = "chip ok";
         } catch (_err) {
           chipApi.textContent = "API: offline";
@@ -407,14 +441,16 @@
       }
 
       function parseApiError(error) {
+        if (api && typeof api.formatError === "function") return api.formatError(error);
+        if (auth && typeof auth.formatError === "function") return auth.formatError(error);
         if (!error) return "Unknown error";
         if (error.traceId) return (error.message || "Request failed") + " (traceId=" + error.traceId + ")";
         return error.message || "Request failed";
       }
 
       async function loadInbox() {
-        var payload = await auth.fetchJson("/api/messages?page=1&pageSize=10");
-        var items = payload && payload.data && payload.data.items ? payload.data.items : [];
+        var list = await api.listMessages({ page: 1, pageSize: 10 });
+        var items = list.items || [];
         if (!items.length) {
           setState("empty", "No inbox messages", "Try reconnecting channels or waiting for inbound events.");
           return;
@@ -435,8 +471,8 @@
       }
 
       async function loadCustomers() {
-        var payload = await auth.fetchJson("/api/customers?page=1&pageSize=10");
-        var items = payload && payload.data && payload.data.items ? payload.data.items : [];
+        var list = await api.listCustomers({ page: 1, pageSize: 10 });
+        var items = list.items || [];
         if (!items.length) {
           setState("empty", "No customers found", "Create customer records from inbound messages.");
           return;
@@ -457,8 +493,8 @@
       }
 
       async function loadAutomations() {
-        var payload = await auth.fetchJson("/api/automations?page=1&pageSize=10");
-        var items = payload && payload.data && payload.data.items ? payload.data.items : [];
+        var list = await api.listAutomations({ page: 1, pageSize: 10 });
+        var items = list.items || [];
         if (!items.length) {
           setState("empty", "No automation rules", "Create a workflow trigger in admin dashboard.");
           return;
@@ -479,8 +515,7 @@
       }
 
       async function loadIntegrationDemo() {
-        var payload = await auth.fetchJson("/api/integrations");
-        var items = payload && payload.data ? payload.data : [];
+        var items = await api.listIntegrations();
         if (!items.length) {
           setState("empty", "No integration records", "Connect at least one e-commerce platform.");
           return;
@@ -500,8 +535,7 @@
       }
 
       async function loadAnalytics() {
-        var payload = await auth.fetchJson("/api/analytics/summary");
-        var data = payload && payload.data ? payload.data : null;
+        var data = await api.getAnalyticsSummary();
         if (!data) {
           setState("empty", "No analytics summary", "Send message traffic to populate metrics.");
           return;
@@ -530,6 +564,16 @@
         }
 
         if (!checkRoleAccess(route)) {
+          var fallbackRoute = getFirstAllowedRoute();
+          if (fallbackRoute && fallbackRoute !== route) {
+            setState(
+              "forbidden",
+              "Forbidden",
+              "Your role '" + (auth.getRole() || "unknown") + "' cannot access " + route + ". Redirecting to " + fallbackRoute + "."
+            );
+            setRoute(fallbackRoute);
+            return;
+          }
           setState(
             "forbidden",
             "Forbidden",
@@ -543,6 +587,8 @@
           await routeDef.loader();
         } catch (error) {
           if (error && error.status === 401) {
+            auth.logout();
+            updateSessionChips();
             setState("error", "Unauthorized", "Session is invalid. Login again.\n" + parseApiError(error));
             return;
           }
@@ -593,6 +639,7 @@
 
       navButtons.forEach(function (button) {
         button.addEventListener("click", function () {
+          if (button.disabled) return;
           setRoute(button.getAttribute("data-route"));
         });
       });
@@ -616,28 +663,44 @@
 
     (function bootstrapWorkbench() {
       function startWorkbench() {
-        if (!window.CBSPAuth) {
+        if (!window.CBSPAuth || !window.CBSPApiClient || typeof window.CBSPApiClient.create !== "function") {
           var stateEl = document.getElementById("view-state");
           if (stateEl) {
             stateEl.className = "state error";
             stateEl.innerHTML =
-              "<h3>error</h3><p><strong>Auth client not loaded</strong>\nRefresh this page or restart preview server.</p>";
+              "<h3>error</h3><p><strong>Client bootstrap failed</strong>\nAuth/API client not loaded. Refresh this page or restart preview server.</p>";
           }
           return;
         }
-        runWorkbench(window.CBSPAuth);
+        runWorkbench(window.CBSPAuth, window.CBSPApiClient.create(window.CBSPAuth));
       }
 
-      if (window.CBSPAuth) {
+      if (window.CBSPAuth && window.CBSPApiClient && typeof window.CBSPApiClient.create === "function") {
         startWorkbench();
         return;
       }
 
-      var fallback = document.createElement("script");
-      fallback.src = "/apps/shared/auth-client.js?v=20260224";
-      fallback.onload = startWorkbench;
-      fallback.onerror = startWorkbench;
-      document.head.appendChild(fallback);
+      var fallbackScripts = [];
+      if (!window.CBSPAuth) fallbackScripts.push("/apps/shared/auth-client.js?v=20260224");
+      if (!window.CBSPApiClient) fallbackScripts.push("/apps/shared/api-client.js?v=20260224");
+
+      if (!fallbackScripts.length) {
+        startWorkbench();
+        return;
+      }
+
+      var remain = fallbackScripts.length;
+      function done() {
+        remain -= 1;
+        if (remain <= 0) startWorkbench();
+      }
+      fallbackScripts.forEach(function (src) {
+        var fallback = document.createElement("script");
+        fallback.src = src;
+        fallback.onload = done;
+        fallback.onerror = done;
+        document.head.appendChild(fallback);
+      });
     })();
   </script>
 </body>

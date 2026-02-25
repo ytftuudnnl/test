@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "date": "2026-02-24T19:08:10.291Z",
+  "driver": "memory",
+  "apiBase": "http://127.0.0.1:56976",
+  "previewBase": "http://127.0.0.1:8775",
+  "checks": {
+    "apiErrorEnvelope": {
+      "pass": true,
+      "missingAuthCode": "AUTH_INVALID_CREDENTIALS",
+      "invalidAuthCode": "AUTH_INVALID_CREDENTIALS",
+      "forbiddenCode": "AUTH_FORBIDDEN",
+      "traceIds": [
+        "6b425082-40cd-4da1-a8d8-d7452ad4fc98",
+        "fd2303fb-cde4-4f19-99f1-3597371ab985",
+        "06c73086-8822-4b2a-8432-cd13508356c3"
+      ]
+    },
+    "frontendGuardContracts": {
+      "pass": true,
+      "workbench": {
+        "pass": true,
+        "missing": []
+      },
+      "admin": {
+        "pass": true,
+        "missing": []
+      },
+      "authClient": {
+        "pass": true,
+        "missing": []
+      },
+      "apiClient": {
+        "pass": true,
+        "missing": []
+      }
+    },
+    "previewPages": {
+      "pass": true,
+      "workbenchStatus": 200,
+      "adminStatus": 200
+    }
+  },
+  "failures": []
+}

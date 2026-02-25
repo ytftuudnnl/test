@@ -19,6 +19,8 @@
     "test:api:integration:mongo": "npm run build:api && node scripts/api-integration-test.js --driver=mongo --require-mongo --mongo-autostart=off",
     "qa:e2e:evidence": "npm run build:api && node scripts/qa-e2e-evidence.js --driver=memory",
     "qa:e2e:evidence:mongo": "npm run build:api && node scripts/qa-e2e-evidence.js --driver=mongo --require-mongo --mongo-autostart=off",
+    "qa:frontend:guards:evidence": "npm run build:api && node scripts/qa-frontend-guard-evidence.js --driver=memory",
+    "qa:frontend:guards:evidence:mongo": "npm run build:api && node scripts/qa-frontend-guard-evidence.js --driver=mongo --require-mongo --mongo-autostart=off",
     "qa:migration:drill": "npm run build:api && node scripts/migration-rollback-drill.js",
     "perf:baseline:memory": "npm run build:api && node scripts/perf-baseline.js --driver=memory --warmup=6 --iterations=30",
     "perf:baseline:mongo": "npm run build:api && node scripts/perf-baseline.js --driver=mongo --require-mongo --mongo-autostart=off --warmup=6 --iterations=30",
