@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "date": "2026-02-25T05:43:52.768Z",
+  "driver": "mongo",
+  "apiBase": "http://127.0.0.1:61141",
+  "previewBase": "http://127.0.0.1:8775",
+  "checks": {
+    "apiErrorEnvelope": {
+      "pass": true,
+      "missingAuthCode": "AUTH_INVALID_CREDENTIALS",
+      "invalidAuthCode": "AUTH_INVALID_CREDENTIALS",
+      "forbiddenCode": "AUTH_FORBIDDEN",
+      "traceIds": [
+        "1fa528cd-53ce-4e6c-9cef-956c4316d042",
+        "6ff71520-955f-4a1b-97f5-633bfbd7e855",
+        "868b3971-2e65-42da-93ab-938069008f91"
+      ]
+    },
+    "frontendGuardContracts": {
+      "pass": true,
+      "workbench": {
+        "pass": true,
+        "missing": []
+      },
+      "admin": {
+        "pass": true,
+        "missing": []
+      },
+      "authClient": {
+        "pass": true,
+        "missing": []
+      },
+      "apiClient": {
+        "pass": true,
+        "missing": []
+      }
+    },
+    "previewPages": {
+      "pass": true,
+      "workbenchStatus": 200,
+      "adminStatus": 200
+    }
+  },
+  "failures": []
+}

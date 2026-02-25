@@ -355,3 +355,5 @@ main().catch((err) => {
   console.error(toErrorString(err));
   process.exit(1);
 });
+
+// ci-trigger: required api check for protected main
